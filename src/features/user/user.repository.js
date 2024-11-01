@@ -43,10 +43,10 @@ export default class UserRepository {
 
   static logoutOfAllDevices = async (userId) => {
     const isDeleted = await UserSession.deleteMany({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId: userId,
     });
     const user = await UserModel.findOne({
-      _id: new mongoose.Types.ObjectId(userId),
+      _id: userId,
     });
     user.sessions = [];
     await user.save();
@@ -55,7 +55,7 @@ export default class UserRepository {
 
   static getUserById = async (userId) => {
     const user = await UserModel.find({
-      _id: new mongoose.Types.ObjectId(userId),
+      _id: userId,
     });
     return user;
   };
@@ -67,7 +67,7 @@ export default class UserRepository {
 
   static updateUserById = async (userInfo, userId, avatar) => {
     const user = await UserModel.findOne({
-      _id: new mongoose.Types.ObjectId(userId),
+      _id: userId,
     });
     if (!user) return null;
     user.name = userInfo.name || user.name;

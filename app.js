@@ -17,9 +17,9 @@ app.use(cookieParser());
 
 app.use("/api/users", userRouter);
 app.use("/api/friends", jwtAuth, friendshipRouter);
-app.use("/api/post", jwtAuth, postRouter);
-app.use("/api/like", jwtAuth, likeRouter);
-app.use("/api/comment", jwtAuth, commentRouter);
+app.use("/api/posts", jwtAuth, postRouter);
+app.use("/api/likes", jwtAuth, likeRouter);
+app.use("/api/comments", jwtAuth, commentRouter);
 
 // 4. Middleware to handle 404 requests.
 app.use((req, res) => {

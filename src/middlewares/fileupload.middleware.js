@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const timestamp = new Date().toISOString().replace(/:/g, "-");
-    cb(null, "avatar-" + timestamp + path.extname(file.originalname));
+    cb(null, timestamp + path.extname(file.originalname));
   },
 });
 

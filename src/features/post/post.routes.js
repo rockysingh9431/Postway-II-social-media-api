@@ -5,18 +5,18 @@ import {
   deletePost,
   getALLPost,
   getPostById,
-  getPostUser,
+  getPostByUser,
   updatePost,
 } from "./post.controller.js";
+import jwtAuth from "../../middlewares/jwt.middleware.js";
 
 const postRouter = express.Router();
+
 postRouter.get("/all", getALLPost);
-postRouter.get("/:id", getPostById);
-postRouter.get("/", getPostUser);
-postRouter.post("/", upload.single("imageUrl"), createPost);
-postRouter.delete("/:id", deletePost);
-postRouter.put("/:id", upload.single("imageUrl"), updatePost);
-// postRouter.post("/:id/bookmark", bookmarkPost);
-// postRouter.put("/:id/:status", updatePostStatus);
+postRouter.get("/:id", jwtAuth, getPostById);
+postRouter.get("/", jwtAuth, getPostByUser);
+postRouter.post("/", jwtAuth, upload.single("image"), createPost);
+postRouter.delete("/:id", jwtAuth, deletePost);
+postRouter.put("/:id", jwtAuth, upload.single("image"), updatePost);
 
 export default postRouter;

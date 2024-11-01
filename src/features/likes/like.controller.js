@@ -1,46 +1,34 @@
-import LikeModel from "./like.model.js";
-import { ApplicationError } from "../../errorHandler/applicationError.js";
-
-export const getLikes = (req, res) => {
+import LikeRepository from "./like.repository.js";
+export const getLikes = async (req, res) => {
   try {
     let postId = req.params.postId;
-    postId = parseInt(postId);
 
     // Fetch likes for the given postId
-    const resp = LikeModel.getLikesBypostId(postId); // assuming it's async
+    const resp = await LikeRepository.getLikesBypostId(postId); // assuming it's async
 
     if (resp.success) {
-      return res.status(200).json(resp.likes);
+      return res.status(200).json(resp);
     } else {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    // Pass the error to the error-handling middleware
-    throw new ApplicationError(
-      error.message || "An error occurred while fetching likes",
-      error.status || 500
-    );
+    return res.status(500).json({ message: error.message });
   }
 };
 
-export const toggleLikes = (req, res) => {
+export const toggleLikes = async (req, res) => {
   try {
-    const postId = parseInt(req.params.postId);
-    const userId = req.userID;
+    const postId = req.params.postId;
+    const userId = req.userId;
 
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
-    }
-
-    // Toggle like status (assuming it's async)
-    const resp = LikeModel.toggleLike(postId, userId);
+    const resp = await LikeRepository.toggleLike(postId, userId);
 
     if (resp.success) {
-      return res.status(200).json({ message: resp.message, like: resp.like });
+      return res.status(201).json(resp);
     } else {
-      return res.status(404).json({ message: resp.message });
+      return res.status(200).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };

@@ -1,53 +1,42 @@
-import PostModel from "./post.model.js";
 import { ApplicationError } from "../../errorHandler/applicationError.js";
-
+import PostRepository from "./post.repository.js";
 // Create a new post
-export const createPost = (req, res) => {
+export const createPost = async (req, res) => {
   try {
     const { caption } = req.body;
-    const imageUrl = req.file?.filename;
+    const imageUrl = "/uploads/" + "post-" + req.file?.filename;
 
-    const newPost = PostModel.createPost({
-      userId: req.userID,
+    const newPost = await PostRepository.createPost({
+      userId: req.userId,
       caption,
       imageURL: imageUrl,
     });
-
-    return res.status(201).json(newPost);
+    return res.status(201).json({ post: newPost });
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Get all posts with optional filtering, sorting, and pagination
-export const getALLPost = (req, res) => {
+export const getALLPost = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const { caption, status, sort } = req.body;
+    const response = await PostRepository.getAllPosts();
 
-    const posts = PostModel.getFilteredPosts(
-      caption,
-      status,
-      sort,
-      parseInt(page),
-      parseInt(limit)
-    );
-
-    if (posts.length > 0) {
-      return res.status(200).json(posts);
+    if (response.success) {
+      return res.status(200).json(response);
     } else {
-      return res.status(404).json({ message: "No posts found" });
+      return res.status(404).json({ message: response.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Get a specific post by its ID
-export const getPostById = (req, res) => {
+export const getPostById = async (req, res) => {
   try {
     const postId = req.params.id;
-    const resp = PostModel.getPostById(postId);
+    const resp = await PostRepository.getPostById(postId);
 
     if (resp.success) {
       return res.status(200).json(resp.post);
@@ -55,15 +44,15 @@ export const getPostById = (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Get all posts by a specific user
-export const getPostUser = (req, res) => {
+export const getPostByUser = async (req, res) => {
   try {
-    const userId = req.userID;
-    const resp = PostModel.getPostsByUserId(userId);
+    const userId = req.userId;
+    const resp = await PostRepository.getPostsByUserId(userId);
 
     if (resp.success) {
       return res.status(200).json(resp.posts);
@@ -71,34 +60,38 @@ export const getPostUser = (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Delete a specific post by its ID
-export const deletePost = (req, res) => {
+export const deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const resp = PostModel.deletePost(postId);
+    const userId = req.userId;
+    const resp = await PostRepository.deletePost(postId, userId);
 
     if (resp.success) {
-      return res.status(200).json({ message: resp.message });
+      return res.status(200).json({ message: resp });
     } else {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Update a specific post by its ID
-export const updatePost = (req, res) => {
+export const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const { caption } = req.body;
     const imageUrl = req.file?.filename;
 
-    const resp = PostModel.updatePost(postId, { caption, imageURL: imageUrl });
+    const resp = await PostRepository.updatePost(postId, {
+      caption,
+      imageURL: imageUrl,
+    });
 
     if (resp.success) {
       return res.status(200).json(resp.post);
@@ -106,7 +99,7 @@ export const updatePost = (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -116,7 +109,7 @@ export const updatePostStatus = (req, res) => {
     const postId = req.params.id;
     const status = req.body.status;
 
-    const resp = PostModel.updatePostStatus(postId, status);
+    const resp = PostRepository.updatePostStatus(postId, status);
 
     if (resp.success) {
       return res.status(200).json({ message: resp.message });
@@ -124,24 +117,6 @@ export const updatePostStatus = (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    throw new ApplicationError(error.message, error.status);
-  }
-};
-
-// Bookmark a specific post
-export const bookmarkPost = (req, res) => {
-  try {
-    const postId = req.params.id;
-    const userId = req.userID;
-
-    const resp = PostModel.toggleBookmark(postId, userId);
-
-    if (resp.success) {
-      return res.status(200).json({ message: resp.message });
-    } else {
-      return res.status(404).json({ message: resp.message });
-    }
-  } catch (error) {
-    throw new ApplicationError(error.message, error.status);
+    return res.status(500).json({ error: error.message });
   }
 };

@@ -138,7 +138,7 @@ export const getUsers = async (req, res) => {
 export const updateUserById = async (req, res) => {
   const userInfo = req.body;
   const { userId } = req.params;
-  const avatar = req.file ? "/uploads/" + req.file.filename : null; // Check if file exists
+  const avatar = "/uploads/" + "avatar-" + req.file?.filename; // Check if file exists
 
   try {
     const response = await UserRepository.updateUserById(

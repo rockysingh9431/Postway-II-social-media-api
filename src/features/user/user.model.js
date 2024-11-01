@@ -39,6 +39,18 @@ const userSchema = new mongoose.Schema({
       ref: "UserSession",
     },
   ],
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+    },
+  ],
+  likedPost: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Likes",
+    },
+  ],
 });
 
 export const UserSession = mongoose.model("UserSession", sessionSchema);
