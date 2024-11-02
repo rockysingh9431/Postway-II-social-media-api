@@ -1,80 +1,118 @@
-import { ApplicationError } from "../../errorHandler/applicationError.js";
 import { UserModel, UserSession } from "./user.model.js";
-import mongoose from "mongoose";
+import ApplicationError from "../../errorHandler/applicationError.js";
+
 export default class UserRepository {
   static signUp = async (name, email, password, gender) => {
-    const user = await UserModel.findOne({ email });
-    if (user) {
-      throw new ApplicationError("Email Already exists", 400);
-    } else {
-      const newUser = new UserModel({ name, email, password, gender });
-      await newUser.save();
-      return newUser;
+    try {
+      const user = await UserModel.findOne({ email });
+      if (user) {
+        return {
+          success: false,
+          message: `User with the email: ${email} already exists`,
+        };
+      } else {
+        const newUser = new UserModel({
+          name,
+          email,
+          password,
+          gender,
+        });
+        await newUser.save();
+        return { success: true, user: newUser };
+      }
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
     }
   };
 
   static signIn = async (email) => {
-    const user = await UserModel.findOne({ email: email });
-    return user;
-  };
-
-  static logout = async (userId) => {
-    const user = await UserModel.findOne({ _id: userId });
-    const session = await UserSession.findOneAndDelete({ userId });
-    user.sessions = user.sessions.filter(
-      (sessionId) => !sessionId.equals(session._id)
-    );
-    await user.save();
+    try {
+      const user = await UserModel.findOne({ email: email });
+      return user;
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 
   static createSession = async (req, user, token) => {
-    const session = new UserSession({
-      userId: user.id,
-      token: token,
-      deviceInfo: req.headers["user-agent"],
-      ip: req.ip,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-    await session.save();
-    const updatedUser = await UserModel.findOne({ email: user.email });
-    updatedUser.sessions.push(session.id);
-    await updatedUser.save();
+    try {
+      const session = new UserSession({
+        userId: user.id,
+        token: token,
+        deviceInfo: req.headers["user-agent"],
+        ip: req.ip,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      await session.save();
+      await UserModel.findByIdAndUpdate(
+        { _id: user.id },
+        { $push: { sessions: session._id } },
+        { new: true }
+      );
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
+  };
+  static logout = async (userId) => {
+    try {
+      const session = await UserSession.findOneAndDelete({ userId });
+      console.log(session._id);
+      await UserModel.findByIdAndUpdate(userId, {
+        $pull: { sessions: session._id },
+      });
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 
   static logoutOfAllDevices = async (userId) => {
-    const isDeleted = await UserSession.deleteMany({
-      userId: userId,
-    });
-    const user = await UserModel.findOne({
-      _id: userId,
-    });
-    user.sessions = [];
-    await user.save();
-    return isDeleted;
+    try {
+      await UserSession.deleteMany({ userId });
+      await UserModel.findByIdAndUpdate(
+        { _id: userId },
+        { $set: { sessions: [] } }
+      );
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 
   static getUserById = async (userId) => {
-    const user = await UserModel.find({
-      _id: userId,
-    });
-    return user;
+    try {
+      const user = await UserModel.findOne({ _id: userId });
+      return user;
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 
   static getAllUsers = async () => {
-    const users = await UserModel.find({});
-    return users;
+    try {
+      const users = await UserModel.find({});
+      return users;
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 
   static updateUserById = async (userInfo, userId, avatar) => {
-    const user = await UserModel.findOne({
-      _id: userId,
-    });
-    if (!user) return null;
-    user.name = userInfo.name || user.name;
-    user.email = userInfo.email || user.email;
-    user.gender = userInfo.gender || user.gender;
-    user.avatar = avatar || user.avatar;
-    await user.save();
-    return user;
+    const updateFields = {
+      ...(userInfo.name && { name: userInfo.name }),
+      ...(userInfo.email && { email: userInfo.email }),
+      ...(userInfo.gender && { gender: userInfo.gender }),
+      ...(avatar && { avatar: avatar }),
+    };
+    try {
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        { _id: userId },
+        { $set: updateFields },
+        { new: true }
+      );
+      if (!updatedUser) return { success: false, message: "user not found" };
+
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      throw new ApplicationError(error.code || 500, error.message);
+    }
   };
 }

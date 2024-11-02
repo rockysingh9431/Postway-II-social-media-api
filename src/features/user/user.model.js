@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     maxLength: [25, "Name can't be greater than 25 characters"],
+    required: true,
   },
   email: {
     type: String,
@@ -37,18 +38,7 @@ const userSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "UserSession",
-    },
-  ],
-  posts: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
-    },
-  ],
-  likedPost: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Likes",
+      required: true,
     },
   ],
 });

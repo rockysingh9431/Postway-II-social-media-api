@@ -1,33 +1,20 @@
-import jwt from "jsonwebtoken";
 import UserRepository from "./user.repository.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { ApplicationError } from "../../errorHandler/applicationError.js";
+import ApplicationError from "../../errorHandler/applicationError.js";
 
 export const signUp = async (req, res) => {
   const { name, email, password, gender } = req.body;
-
   try {
-    // Check if the user already exists
-    const existingUser = await UserRepository.signIn(email);
-    if (existingUser) {
-      throw new ApplicationError(400, "Email already in use");
-    }
-
-    // Hash the password
     const hashPass = await bcrypt.hash(password, 12);
-    const user = await UserRepository.signUp(name, email, hashPass, gender);
-
-    // Send a success response with the created user details
-    res.status(201).json({ user });
-  } catch (error) {
-    if (error instanceof ApplicationError) {
-      res.status(error.code).json({ error: error.message });
+    const resp = await UserRepository.signUp(name, email, hashPass, gender);
+    if (resp.success) {
+      res.status(201).json({ response: resp });
     } else {
-      console.error("Sign up error:", error); // Log the unexpected error for debugging
-      res.status(500).json({
-        error: " An unexpected error occurred. Please try again later.",
-      });
+      res.status(409).json({ message: resp.message });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -37,12 +24,14 @@ export const signIn = async (req, res) => {
   try {
     const user = await UserRepository.signIn(email);
     if (!user) {
-      throw new ApplicationError(401, "User not found. Please register.");
+      return res
+        .status(401)
+        .json({ message: "User not found. Please register." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new ApplicationError(401, "Incorrect password.");
+      return res.status(401).json({ message: "Incorrect password" });
     }
 
     const token = jwt.sign(
@@ -62,14 +51,7 @@ export const signIn = async (req, res) => {
 
     return res.status(200).json({ token });
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      res.status(error.code).json({ error: error.message });
-    } else {
-      console.error("Sign in error:", error); // Log the unexpected error for debugging
-      res.status(500).json({
-        error: "An unexpected error occurred. Please try again later.",
-      });
-    }
+    res.status(error.code).json({ error: error.message });
   }
 };
 
@@ -77,27 +59,20 @@ export const logout = async (req, res) => {
   try {
     await UserRepository.logout(req.userId);
     res.clearCookie("token", { httpOnly: true });
-    res.status(200).json({ msg: "Logged out successfully" });
+    res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    console.error("Logout error:", error); // Log the unexpected error for debugging
-    return res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 export const logoutOfAllDevices = async (req, res) => {
   const userId = req.userId;
-
   try {
     await UserRepository.logoutOfAllDevices(userId);
     res.clearCookie("token", { httpOnly: true });
-    res.status(200).json({ msg: "Logged out from all devices" });
+    res.status(200).json({ message: "Logged out from all devices" });
   } catch (error) {
-    console.error("Logout from all devices error:", error); // Log the unexpected error for debugging
-    return res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
@@ -107,31 +82,25 @@ export const getUserById = async (req, res) => {
   try {
     const user = await UserRepository.getUserById(userId);
     if (user) {
-      return res.status(200).json({ msg: "User found successfully", user });
+      return res.status(200).json({ message: "User found successfully", user });
     } else {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
-    console.error("Get user by ID error:", error); // Log the unexpected error for debugging
-    return res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 export const getUsers = async (req, res) => {
   try {
-    const allUsers = await UserRepository.getAllUsers();
-    if (allUsers.length > 0) {
-      return res.status(200).json({ users: allUsers });
+    const users = await UserRepository.getAllUsers();
+    if (users) {
+      return res.status(200).json({ users: users });
     } else {
-      return res.status(404).json({ msg: "No users found" });
+      return res.status(404).json({ message: "No users found" });
     }
   } catch (error) {
-    console.error("Get all users error:", error); // Log the unexpected error for debugging
-    return res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
@@ -141,22 +110,13 @@ export const updateUserById = async (req, res) => {
   const avatar = "/uploads/" + "avatar-" + req.file?.filename; // Check if file exists
 
   try {
-    const response = await UserRepository.updateUserById(
-      userInfo,
-      userId,
-      avatar
-    );
-    if (response) {
-      res
-        .status(200)
-        .json({ msg: "User successfully updated", user: response });
+    const resp = await UserRepository.updateUserById(userInfo, userId, avatar);
+    if (resp.success) {
+      res.status(200).json({ message: "User successfully updated", resp });
     } else {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    console.error("Update user by ID error:", error); // Log the unexpected error for debugging
-    return res
-      .status(500)
-      .json({ error: "An unexpected error occurred. Please try again later." });
+    return res.status(error.code).json({ error: error.message });
   }
 };

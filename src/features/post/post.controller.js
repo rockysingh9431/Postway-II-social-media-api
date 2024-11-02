@@ -1,4 +1,3 @@
-import { ApplicationError } from "../../errorHandler/applicationError.js";
 import PostRepository from "./post.repository.js";
 // Create a new post
 export const createPost = async (req, res) => {
@@ -13,29 +12,29 @@ export const createPost = async (req, res) => {
     });
     return res.status(201).json({ post: newPost });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 // Get all posts with optional filtering, sorting, and pagination
 export const getALLPost = async (req, res) => {
   try {
-    const response = await PostRepository.getAllPosts();
+    const resp = await PostRepository.getAllPosts();
 
-    if (response.success) {
-      return res.status(200).json(response);
+    if (resp.success) {
+      return res.status(200).json({ posts: resp.posts });
     } else {
       return res.status(404).json({ message: response.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 // Get a specific post by its ID
 export const getPostById = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const postId = req.params.postId;
     const resp = await PostRepository.getPostById(postId);
 
     if (resp.success) {
@@ -44,7 +43,7 @@ export const getPostById = async (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
@@ -60,14 +59,14 @@ export const getPostByUser = async (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 // Delete a specific post by its ID
 export const deletePost = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const postId = req.params.postId;
     const userId = req.userId;
     const resp = await PostRepository.deletePost(postId, userId);
 
@@ -77,14 +76,14 @@ export const deletePost = async (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 // Update a specific post by its ID
 export const updatePost = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const postId = req.params.postId;
     const { caption } = req.body;
     const imageUrl = req.file?.filename;
 
@@ -99,14 +98,14 @@ export const updatePost = async (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };
 
 // Update the status of a specific post
 export const updatePostStatus = (req, res) => {
   try {
-    const postId = req.params.id;
+    const postId = req.params.postId;
     const status = req.body.status;
 
     const resp = PostRepository.updatePostStatus(postId, status);
@@ -117,6 +116,6 @@ export const updatePostStatus = (req, res) => {
       return res.status(404).json({ message: resp.message });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.code).json({ error: error.message });
   }
 };

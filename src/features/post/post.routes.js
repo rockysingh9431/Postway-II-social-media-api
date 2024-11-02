@@ -13,10 +13,10 @@ import jwtAuth from "../../middlewares/jwt.middleware.js";
 const postRouter = express.Router();
 
 postRouter.get("/all", getALLPost);
-postRouter.get("/:id", jwtAuth, getPostById);
+postRouter.get("/:postId", jwtAuth, getPostById);
 postRouter.get("/", jwtAuth, getPostByUser);
 postRouter.post("/", jwtAuth, upload.single("image"), createPost);
-postRouter.delete("/:id", jwtAuth, deletePost);
-postRouter.put("/:id", jwtAuth, upload.single("image"), updatePost);
+postRouter.delete("/:postId", jwtAuth, deletePost);
+postRouter.put("/:postId", jwtAuth, upload.single("image"), updatePost);
 
 export default postRouter;

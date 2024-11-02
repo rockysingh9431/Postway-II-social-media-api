@@ -17,25 +17,13 @@ const postSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ["published", "draft", "archived"],
+    enum: ["published", "draft"],
     default: "published", // Default status for new posts
   },
   createdAt: {
     type: Date,
     default: Date.now, // Default creation date for new posts
   },
-  likes: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Like",
-    },
-  ],
-  comments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment",
-    },
-  ],
 });
 
 const PostModel = mongoose.model("Post", postSchema);
