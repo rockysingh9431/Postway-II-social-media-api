@@ -19,6 +19,7 @@ const friendSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+    required: true,
   },
   updatedAt: {
     type: Date,
@@ -28,5 +29,5 @@ const friendSchema = new mongoose.Schema({
 
 friendSchema.index({ requester: 1, recipient: 1 }, { unique: true });
 
-const FriendModel = mongoose.model("Friend", friendSchema);
-export default FriendModel;
+const FriendShipModel = mongoose.model("Friend", friendSchema);
+export default FriendShipModel;

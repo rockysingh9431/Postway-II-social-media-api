@@ -8,9 +8,9 @@ export const toggleFriendShip = async (req, res) => {
     if (resp.success == 1) {
       return res.status(201).json(resp);
     } else if (resp.success == 0) {
-      return res.status(200).json({ message: resp.message });
+      return res.status(201).json({ resp });
     } else {
-      res.status(404).json({ message: resp.message });
+      res.status(204).json({ message: resp.message });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -46,8 +46,13 @@ export const getPendingRequests = async (req, res) => {
 export const responseToRequest = async (req, res) => {
   const userId = req.userId;
   const friendId = req.params.friendId;
+  const status = req.body.status;
   try {
-    const resp = await FriendshipRepository.responseToRequest(userId, friendId);
+    const resp = await FriendshipRepository.responseToRequest(
+      userId,
+      friendId,
+      status
+    );
     if (resp.success) {
       return res.status(200).json(resp);
     } else {
