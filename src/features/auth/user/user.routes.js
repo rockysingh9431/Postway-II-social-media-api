@@ -8,8 +8,8 @@ import {
   getUserById,
   updateUserById,
 } from "./user.controller.js";
-import jwtAuth from "../../middlewares/jwt.middleware.js";
-import { upload } from "../../middlewares/fileupload.middleware.js";
+import jwtAuth from "../../../middlewares/jwt.middleware.js";
+import { upload } from "../../../middlewares/fileupload.middleware.js";
 const userRouter = express.Router();
 
 userRouter.post("/signup", signUp);

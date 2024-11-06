@@ -1,5 +1,5 @@
-import { UserModel, UserSession } from "./user.model.js";
-import ApplicationError from "../../errorHandler/applicationError.js";
+import { UserModel, UserSession } from "../user.model.js";
+import ApplicationError from "../../../errorHandler/applicationError.js";
 
 export default class UserRepository {
   static signUp = async (name, email, password, gender) => {

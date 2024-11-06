@@ -5,21 +5,12 @@ import {
   responseToRequest,
   toggleFriendShip,
 } from "./friendship.controller.js";
-import jwtAuth from "../../middlewares/jwt.middleware.js";
 
 const friendshipRouter = express.Router();
 
-friendshipRouter.get("/get-friends/:userId", jwtAuth, getFriendsById);
-friendshipRouter.get("/get-pending-requests", jwtAuth, getPendingRequests);
-friendshipRouter.post(
-  "/toggle-friendship/:friendId",
-  jwtAuth,
-  toggleFriendShip
-);
-friendshipRouter.post(
-  "/response-to-request/:friendId",
-  jwtAuth,
-  responseToRequest
-);
+friendshipRouter.get("/get-friends/:userId", getFriendsById);
+friendshipRouter.get("/get-pending-requests", getPendingRequests);
+friendshipRouter.post("/toggle-friendship/:friendId", toggleFriendShip);
+friendshipRouter.post("/response-to-request/:friendId", responseToRequest);
 
 export default friendshipRouter;

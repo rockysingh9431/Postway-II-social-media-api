@@ -1,7 +1,6 @@
 import UserRepository from "./user.repository.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import ApplicationError from "../../errorHandler/applicationError.js";
 
 export const signUp = async (req, res) => {
   const { name, email, password, gender } = req.body;
@@ -38,6 +37,7 @@ export const signIn = async (req, res) => {
       {
         userId: user.id,
         email: user.email,
+        time: Date.now(),
       },
       "postwayProject2", // Replace with your actual secret
       { expiresIn: "1h" }
