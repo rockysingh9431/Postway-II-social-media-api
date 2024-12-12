@@ -36,4 +36,5 @@ app.listen(3000, () => {
   console.log("We need to stop the server when not needed");
   console.log("we have added a feature of otp verification");
   console.log("we have added a feature of email verification");
+  console.log("we have added a feature of mobile verification");
 });
